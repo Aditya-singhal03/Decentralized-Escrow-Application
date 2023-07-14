@@ -2,12 +2,18 @@ import { ethers } from 'ethers';
 import { useEffect, useState } from 'react';
 import deploy from './deploy';
 import Escrow from './Escrow';
+import { Nbar } from './components/Nbar';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 export async function approve(escrowContract, signer) {
-  const approveTxn = await escrowContract.connect(signer).approve();
-  await approveTxn.wait();
+const gasLimit = 1000000; // Set your desired gas limit value
+  try{
+    const approveTxn = await escrowContract.connect(signer).approve({gasLimit});
+    await approveTxn.wait();
+  }catch(e){
+    console.log(e);
+  }
 }
 
 function App() {
@@ -18,7 +24,6 @@ function App() {
   useEffect(() => {
     async function getAccounts() {
       const accounts = await provider.send('eth_requestAccounts', []);
-
       setAccount(accounts[0]);
       setSigner(provider.getSigner());
     }
@@ -45,7 +50,8 @@ function App() {
           document.getElementById(escrowContract.address).innerText =
             "✓ It's been approved!";
         });
-
+        console.log("approve ",account);
+        console.log("approve ",signer);
         await approve(escrowContract, signer);
       },
     };
@@ -55,6 +61,8 @@ function App() {
 
   return (
     <>
+      <Nbar></Nbar>
+      <navbar/>
       <div className="contract">
         <h1> New Contract </h1>
         <label>
